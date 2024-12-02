@@ -1,6 +1,7 @@
 module Main where
 
 import AOCDay1
+import Control.Monad (when)
 import Data.Map qualified as M
 import Data.Text qualified as T
 import Data.Text.Read qualified as TR
@@ -11,34 +12,30 @@ ctx :: M.Map [Char] (T.Text -> (Int, Int))
 ctx =
     M.fromList [("data/day1.txt", day1)]
 
+data RunParam
+    = All
+    | SpecificDay String
+    deriving (Eq)
+
 main :: IO ()
 main = do
     selection <- specificDay
-    -- TODO: refactor in due time !
-    case selection of
-        Nothing ->
-            mapM_
-                ( \(path, fn) -> do
-                    fh <- IO.openFile path IO.ReadMode
-                    content <- IO.hGetContents fh
-                    putStr $ path ++ " -> "
-                    print . fn . T.pack $ content
-                    IO.hClose fh
-                )
-                (M.toList ctx)
-        Just fileName -> do
-            fh <- IO.openFile fileName IO.ReadMode
-            content <- IO.hGetContents fh
-            putStr $ fileName ++ " -> "
-            mapM_ (\fn -> print . fn . T.pack $ content) (M.lookup fileName ctx)
-            IO.hClose fh
-            return ()
+    mapM_
+        ( \(path, fn) ->
+            when (selection == All || selection == SpecificDay path) $ do
+                fh <- IO.openFile path IO.ReadMode
+                content <- IO.hGetContents fh
+                putStr $ path ++ " -> "
+                print . fn . T.pack $ content
+                IO.hClose fh
+        )
+        (M.toList ctx)
   where
     specificDay = do
         inputs <- E.getArgs
         return $
             case inputs of
-                [] -> Nothing
+                [] -> All
                 [input] -> toFileName input
                 _ -> error "We do not support multiple parameters !"
     toFileName input =
@@ -46,7 +43,7 @@ main = do
             Right (day :: Int, _) ->
                 if day >= 1 && day <= 31
                     then
-                        Just $ "data/day" ++ show day ++ ".txt"
+                        SpecificDay $ "data/day" ++ show day ++ ".txt"
                     else
                         error "Invalid day !"
             Left msg -> error msg
