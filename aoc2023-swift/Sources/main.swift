@@ -13,7 +13,7 @@ let days: [Int: (((String) -> Int), ((String) -> Int))] =
 
 @MainActor
 func aocRun(for d: Int) {
-  let inputFile = "data/day\(d)-input.txt"
+  let inputFile = "data/day\(d).txt"
   do {
     let data = try String(contentsOfFile: inputFile, encoding: .utf8)
     if d == 1 {
