@@ -34,7 +34,7 @@ func aocRun(for d: Int) {
 repeat {
   print("Which day ? (or 'q' to quit) : ", terminator: "")
   let input = readLine()
-  guard let day = Int(input!), day <= 31 && day >= 1 else {
+  guard let day = Int(input!), day <= 25 && day >= 1 else {
     if input == "q" {
       again = false
     } else {

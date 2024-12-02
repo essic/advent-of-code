@@ -41,7 +41,7 @@ main = do
     toFileName input =
         case TR.decimal . T.pack $ input of
             Right (day :: Int, _) ->
-                if day >= 1 && day <= 31
+                if day >= 1 && day <= 25
                     then
                         SpecificDay $ "data/day" ++ show day ++ ".txt"
                     else
