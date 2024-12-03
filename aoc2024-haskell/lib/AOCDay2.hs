@@ -59,24 +59,19 @@ iteratePart1 vect =
 
 iteratePart2 :: V.Vector Int -> ReportState
 iteratePart2 vect =
-    -- TODO: Make ReportState a Monoid ?
-    if any ((== Safe) . iteratePart1) getAllPossibleVersions
-        then
-            Safe
-        else
-            Unsafe
+    case iteratePart1 vect of
+        Safe -> Safe
+        _ -> runForRemainingVersions 0
   where
-    getAllPossibleVersions =
-        vect : doIt 0
-      where
-        doIt :: Int -> [V.Vector Int]
-        doIt position
-            | position == V.length vect =
-                []
-            | otherwise =
-                let p1 = V.take position vect
-                    p2 = V.drop (position + 1) vect
-                 in (p1 <> p2) : doIt (position + 1)
+    runForRemainingVersions position
+        | position == V.length vect =
+            Unsafe
+        | otherwise =
+            let p1 = V.take position vect
+                p2 = V.drop (position + 1) vect
+             in case iteratePart1 (p1 <> p2) of
+                    Safe -> Safe
+                    _ -> runForRemainingVersions (position + 1)
 
 part :: (V.Vector Int -> ReportState) -> [V.Vector Int] -> Int
 part fn x =
