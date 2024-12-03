@@ -87,6 +87,7 @@ library
     exposed-modules:  
         AOCDay1,
         AOCDay2,
+        AOCDay3,
 
     -- Modules included in this library but not exported.
     -- other-modules:
@@ -100,6 +101,7 @@ library
         text,
         containers,
         vector,
+        attoparsec,
 
     -- Directories containing source files.
     hs-source-dirs:   lib
