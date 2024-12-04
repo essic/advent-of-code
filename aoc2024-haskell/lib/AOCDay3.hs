@@ -44,16 +44,6 @@ parseValidNumber =
         d1 <- parseDigit
         return [d1]
 
-runParser :: AT.Parser a -> T.Text -> [a]
-runParser p input =
-    case AT.parse p input of
-        (AT.Done nextInput r) ->
-            if nextInput == T.pack ""
-                then [r]
-                else r : runParser p nextInput
-        AT.Fail nextInput _ _ -> runParser p nextInput
-        _ -> []
-
 parserPart1 :: AT.Parser Mul
 parserPart1 = do
     _ <- AT.manyTill AT.anyChar (AT.string $ T.pack "mul(")
@@ -62,9 +52,6 @@ parserPart1 = do
     num2 <- parseValidNumber
     AT.char ')'
     return $ M (num1, num2)
-
-part1 :: T.Text -> Int
-part1 = sum . map (\(M x) -> uncurry (*) x) <$> runParser parserPart1
 
 parserPart2 :: AT.Parser Mul2
 parserPart2 =
@@ -86,17 +73,15 @@ parserPart2 =
     tokenDoNot = T.pack "on't()"
     tokenMul = T.pack "ul("
 
--- INFO: non optimized version
--- part2 :: T.Text -> Int
--- part2 =
---     sum . map (uncurry (*)) . customFilter True . runParser parserPart2
---   where
---     customFilter :: Bool -> [Mul2] -> [(Int, Int)]
---     customFilter _ [] = []
---     customFilter True ((Op x) : xs') = x : customFilter True xs'
---     customFilter False (Op _ : xs') = customFilter False xs'
---     customFilter _ (DoNotDoIt : xs') = customFilter False xs'
---     customFilter _ (DoIt : xs') = customFilter True xs'
+-- INFO: We compute the operation during parsing
+optimizedPart1 :: T.Text -> Int
+optimizedPart1 input =
+    case AT.parse parserPart1 input of
+        AT.Done nextInput (M (a, b)) ->
+            a * b + optimizedPart1 nextInput
+        AT.Fail nextInput _ _ ->
+            optimizedPart1 nextInput
+        _ -> 0
 
 -- INFO: We avoid useless parsing and compute the operation during parsing
 -- INFO: We always run until Partial result.
@@ -121,4 +106,31 @@ optimizedPart2 = optimizedParserPart2 parserPart2
 
 day3 :: T.Text -> (Int, Int)
 day3 input =
-    (part1 input, optimizedPart2 input)
+    (optimizedPart1 input, optimizedPart2 input)
+
+-- INFO: Non optimized version
+-- runParser :: AT.Parser a -> T.Text -> [a]
+-- runParser p input =
+--     case AT.parse p input of
+--         (AT.Done nextInput r) ->
+--             if nextInput == T.pack ""
+--                 then [r]
+--                 else r : runParser p nextInput
+--         AT.Fail nextInput _ _ -> runParser p nextInput
+--         _ -> []
+
+-- INFO: Non optimized version
+-- part1 :: T.Text -> Int
+-- part1 = sum . map (\(M x) -> uncurry (*) x) <$> runParser parserPart1
+
+-- INFO: Non optimized version
+-- part2 :: T.Text -> Int
+-- part2 =
+--     sum . map (uncurry (*)) . customFilter True . runParser parserPart2
+--   where
+--     customFilter :: Bool -> [Mul2] -> [(Int, Int)]
+--     customFilter _ [] = []
+--     customFilter True ((Op x) : xs') = x : customFilter True xs'
+--     customFilter False (Op _ : xs') = customFilter False xs'
+--     customFilter _ (DoNotDoIt : xs') = customFilter False xs'
+--     customFilter _ (DoIt : xs') = customFilter True xs'
