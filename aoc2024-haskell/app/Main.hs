@@ -4,6 +4,7 @@ import AOCDay1
 import AOCDay2
 import AOCDay3
 import AOCDay4
+import AOCDay5
 import Control.Monad (when)
 import Data.Map qualified as M
 import Data.Text qualified as T
@@ -18,6 +19,7 @@ ctx =
         , ("data/day2.txt", day2)
         , ("data/day3.txt", day3)
         , ("data/day4.txt", day4)
+        , ("data/day5.txt", day5)
         ]
 
 data RunParam
