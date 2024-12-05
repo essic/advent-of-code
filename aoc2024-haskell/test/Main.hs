@@ -6,6 +6,7 @@ module Main (main) where
 import AOCDay1 qualified as D1
 import AOCDay2 qualified as D2
 import AOCDay3 qualified as D3
+import AOCDay4 qualified as D4
 import Data.String.QQ
 import Data.Text qualified as T
 import Test.Hspec
@@ -34,6 +35,19 @@ inputDay3Part1 = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)
 inputDay3Part2 :: T.Text
 inputDay3Part2 = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
 
+inputDay4 :: T.Text
+inputDay4 =
+    [s|MMMSXXMASM
+MSAMXMSMSA
+AMXSXMAAMM
+MSAMASMSMX
+XMASAMXAMM
+XXAMMXXAMA
+SMSMSASXSS
+SAXAMASAAA
+MAMMMXMMMM
+MXMXAXMASX|]
+
 main :: IO ()
 main = hspec $ do
     describe "Day 1" $ do
@@ -57,3 +71,10 @@ main = hspec $ do
         it "- part 2" $ do
             let (_, res) = D3.day3 inputDay3Part2
              in res `shouldBe` 48
+    describe "Day 4" $ do
+        it "- part 1" $ do
+            let (res, _) = D4.day4 inputDay4
+             in res `shouldBe` 18
+        it "- part 4" $ do
+            let (_, res) = D4.day4 inputDay4
+             in res `shouldBe` 9
