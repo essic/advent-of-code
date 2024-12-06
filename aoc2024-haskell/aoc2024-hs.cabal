@@ -90,6 +90,7 @@ library
         AOCDay3,
         AOCDay4,
         AOCDay5,
+        AOCDay6,
 
     -- Modules included in this library but not exported.
     -- other-modules:
@@ -104,6 +105,7 @@ library
         containers,
         vector,
         attoparsec,
+        matrix,
 
     -- Directories containing source files.
     hs-source-dirs:   lib
