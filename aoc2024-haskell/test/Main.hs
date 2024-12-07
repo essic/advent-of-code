@@ -36,6 +36,9 @@ main = hspec $ do
         it "- part 2" $ do
             let (_, res) = day3 inputDay3Part2
              in res `shouldBe` 48
+        it "- code_report version part 1" $ do
+            let (res, _) = day3 inputDay3Part1
+             in res `shouldBe` 161
     describe "Day 4" $ do
         it "- part 1" $ do
             let (res, _) = day4 inputDay4

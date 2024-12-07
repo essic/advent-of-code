@@ -1,10 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
 
-module AOCDay3 (day3) where
+module AOCDay3 (day3, part1NoParsec) where
 
 import Control.Applicative ((<|>))
 import Data.Attoparsec.Text qualified as AT
 import Data.Char (isDigit)
+import Data.List qualified as L
 import Data.Text qualified as T
 
 newtype Mul = M (Int, Int)
@@ -108,6 +109,21 @@ day3 :: T.Text -> (Int, Int)
 day3 input =
     (optimizedPart1 input, optimizedPart2 input)
 
+{-- INFO: Trying out code_report solution of day 3 found here https://youtu.be/c58tokE3B-I?si=D4xmZecNkT54Yl5Z
+    Just checking the distance between BQN and haskell --}
+part1NoParsec :: T.Text -> Int
+part1NoParsec = filterAndConvert . split3 . split2 . split1
+  where
+    split1 = T.splitOn (T.pack "mul(")
+    split2 = concatMap (T.splitOn (T.pack ")"))
+    split3 = map (T.splitOn (T.pack ","))
+    filterAndConvert i = sum $ product . map toInt' <$> filter (\x -> L.length x == 2 && L.all isNumber x) i
+    isNumber :: T.Text -> Bool
+    isNumber i = L.all isDigit (T.unpack i)
+    toInt' :: T.Text -> Int
+    toInt' i = read (T.unpack i)
+
+--
 -- INFO: Non optimized version
 -- runParser :: AT.Parser a -> T.Text -> [a]
 -- runParser p input =
