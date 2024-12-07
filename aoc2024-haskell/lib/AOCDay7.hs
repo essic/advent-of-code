@@ -32,6 +32,7 @@ part1 eqns =
                 (False, False) -> compute c1 (b : xs) || compute c2 (b : xs)
                 (True, False) -> compute c2 (b : xs)
                 (False, True) -> compute c1 (b : xs)
+
 cutSuffix :: String -> String -> Maybe (String, String)
 cutSuffix toRemove from =
     let suffix = reverse . take (length toRemove) $ reverse from
@@ -67,7 +68,7 @@ part2 eqns =
             aStr = show a
             irStr = show ir
             maybeSuffix = fromMaybe ("", "") (cutSuffix aStr irStr)
-            c3 = fromMaybe 0 (toInt . snd $ maybeSuffix)
+            c3 = fromMaybe 0 (toInt . snd $ maybeSuffix) -- if c3 is 0, it means that we failed at cutting the suffix anyway
          in case (modC1 /= 0, c2 <= 0, maybeSuffix == ("", "")) of
                 (True, True, True) -> False
                 (False, False, False) -> compute c1 (b : xs) || compute c2 (b : xs) || compute c3 (b : xs)
