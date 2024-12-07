@@ -1,6 +1,8 @@
-module AOCDay7 (day7) where
+module AOCDay7 (day7, cutSuffix) where
 
+import Data.Maybe (fromMaybe)
 import Data.Text qualified as T
+import Text.Read (readMaybe)
 
 data Equation
     = Eqn
@@ -8,6 +10,93 @@ data Equation
     , operands :: [Int]
     }
     deriving (Show)
+
+part1 :: [Equation] -> Int
+part1 eqns =
+    sum $ part1' <$> eqns
+  where
+    part1' :: Equation -> Int
+    part1' Eqn{result = r, operands = ints} =
+        let stni = reverse ints
+         in if compute r stni then r else 0
+    compute :: Int -> [Int] -> Bool
+    compute _ [] = False
+    compute ir [a] =
+        ((ir `div` a) == 1 && (ir `mod` a == 0)) || (ir - a) == 0
+    compute ir (a : b : xs) =
+        let c1 = ir `div` a
+            modC1 = ir `mod` a
+            c2 = ir - a
+         in case (modC1 /= 0, c2 <= 0) of
+                (True, True) -> False
+                (False, False) -> compute c1 (b : xs) || compute c2 (b : xs)
+                (True, False) -> compute c2 (b : xs)
+                (False, True) -> compute c1 (b : xs)
+cutSuffix :: String -> String -> Maybe (String, String)
+cutSuffix toRemove from =
+    let suffix = reverse . take (length toRemove) $ reverse from
+        prefix = take (length from - length suffix) from
+        verify = suffix == toRemove
+     in if verify then Just (suffix, prefix) else Nothing
+
+part2 :: [Equation] -> Int
+part2 eqns =
+    sum $ part2' <$> eqns
+  where
+    toInt :: String -> Maybe Int
+    toInt = readMaybe
+    part2' :: Equation -> Int
+    part2' Eqn{result = r, operands = ints} =
+        let stni = reverse ints
+         in if compute r stni then r else 0
+    compute :: Int -> [Int] -> Bool
+    compute _ [] = False
+    compute ir [a] =
+        let irStr = show ir
+            aStr = show a
+            l = cutSuffix aStr irStr
+            isValid =
+                case l of
+                    Just (_, "") -> True
+                    _ -> False
+         in ((ir `div` a) == 1 && (ir `mod` a == 0)) || (ir - a) == 0 || isValid
+    compute ir (a : b : xs) =
+        let c1 = ir `div` a
+            modC1 = ir `mod` a
+            c2 = ir - a
+            aStr = show a
+            irStr = show ir
+            maybeSuffix = fromMaybe ("", "") (cutSuffix aStr irStr)
+            c3 = fromMaybe 0 (toInt . snd $ maybeSuffix)
+         in case (modC1 /= 0, c2 <= 0, maybeSuffix == ("", "")) of
+                (True, True, True) -> False
+                (False, False, False) -> compute c1 (b : xs) || compute c2 (b : xs) || compute c3 (b : xs)
+                (False, True, True) -> compute c1 (b : xs)
+                (True, False, True) -> compute c2 (b : xs)
+                (True, True, False) -> compute c3 (b : xs)
+                (False, False, True) -> compute c1 (b : xs) || compute c2 (b : xs)
+                (False, True, False) -> compute c1 (b : xs) || compute c3 (b : xs)
+                (True, False, False) -> compute c2 (b : xs) || compute c3 (b : xs)
+
+day7 :: T.Text -> (Int, Int)
+day7 input =
+    let values = parse input
+     in (part1 values, part2 values)
+
+parse :: T.Text -> [Equation]
+parse input = toEquation <$> T.lines input
+  where
+    toInt :: T.Text -> Int
+    toInt = read . T.unpack
+    toEquation :: T.Text -> Equation
+    toEquation i =
+        let components = T.splitOn (T.pack ":") i
+            rawResult = head components
+            rawOperands1 = T.strip $ T.concat (tail components)
+            rawOperands2 = T.splitOn (T.pack " ") rawOperands1
+         in Eqn{result = toInt rawResult, operands = toInt <$> rawOperands2}
+
+-- INFO: old inefficient solution
 
 data Op = Mul Int Int | Add Int Int | Concat Int Int
 opToValue :: Op -> Int
@@ -96,26 +185,3 @@ getNumberOfSolvedPart2 eqn@Eqn{result = r, operands = p} =
                 (False, False, True) -> findResults2 a3
                 (True, False, True) -> findResults2 a1 ++ findResults2 a3
                 (False, False, False) -> []
-day7 :: T.Text -> (Int, Int)
-day7 input =
-    let values = parse input
-        part1 =
-            sum . map (\(x, _) -> result x) . filter (\(_, Solved n) -> n > 0) $
-                getNumberOfSolvedPart1 <$> values
-        part2 =
-            sum . map (\(x, _) -> result x) . filter (\(_, Solved n) -> n > 0) $
-                getNumberOfSolvedPart2 <$> values
-     in (part1, part2)
-
-parse :: T.Text -> [Equation]
-parse input = toEquation <$> T.lines input
-  where
-    toInt :: T.Text -> Int
-    toInt = read . T.unpack
-    toEquation :: T.Text -> Equation
-    toEquation i =
-        let components = T.splitOn (T.pack ":") i
-            rawResult = head components
-            rawOperands1 = T.strip $ T.concat (tail components)
-            rawOperands2 = T.splitOn (T.pack " ") rawOperands1
-         in Eqn{result = toInt rawResult, operands = toInt <$> rawOperands2}
