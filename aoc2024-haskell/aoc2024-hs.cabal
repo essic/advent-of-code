@@ -91,6 +91,7 @@ library
         AOCDay4,
         AOCDay5,
         AOCDay6,
+        AOCDay7
 
     -- Modules included in this library but not exported.
     -- other-modules:
