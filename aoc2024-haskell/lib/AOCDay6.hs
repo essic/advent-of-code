@@ -57,22 +57,49 @@ findGuard mx =
                             position = (rowNb, avatarColIfx + 1)
                          in P direction position
 
+patrol :: Mx.Matrix Char -> [(Int, Int)] -> Guard -> [(Int, Int)]
+patrol mx xs p@(P direction currentPos) =
+    let nextPos = computeNextPosition p
+        nextPosInfo = getContent mx nextPos
+     in case nextPosInfo of
+            Outside -> currentPos : xs
+            Wall -> patrol mx xs (P (changeDirection direction) currentPos)
+            Free ->
+                if currentPos `elem` xs
+                    then patrol mx xs (move p nextPos)
+                    else patrol mx (currentPos : xs) (move p nextPos)
+
 part1 :: Mx.Matrix Char -> Int
 part1 mx =
     let player = findGuard mx
-     in length $ doIt [] player
-  where
-    doIt xs p@(P direction currentPos) =
-        let nextPos = computeNextPosition p
-            nextPosInfo = getContent mx nextPos
-         in case nextPosInfo of
-                Outside -> currentPos : xs
-                Wall -> doIt xs (P (changeDirection direction) currentPos)
-                Free ->
-                    if currentPos `elem` xs
-                        then doIt xs (move p nextPos)
-                        else doIt (currentPos : xs) (move p nextPos)
+     in length $ patrol mx [] player
 
+optimizedPart2_1 :: Mx.Matrix Char -> Int
+optimizedPart2_1 mx =
+    length . filter id $ startSimulation guardPatrolPositions
+  where
+    guard = findGuard mx
+    guardPatrolPositions = patrol mx [] guard
+    startSimulation :: [(Int, Int)] -> [Bool]
+    startSimulation [] = []
+    startSimulation ((row, col) : xs) =
+        let version = Mx.setElem '#' (row, col) mx
+         in continueSimulation [] guard version : startSimulation xs
+    continueSimulation xs p@(P direction currentPos) mx' =
+        let nextPos = (computeNextPosition p, direction)
+            nextPosInfo = getContent mx' (fst nextPos)
+         in case nextPosInfo of
+                Outside -> False
+                Wall ->
+                    (nextPos `elem` xs)
+                        || continueSimulation (nextPos : xs) (P (changeDirection direction) currentPos) mx'
+                Free -> continueSimulation xs (move p (fst nextPos)) mx'
+
+day6 :: T.Text -> (Int, Int)
+day6 input =
+    (part1 $ parse input, optimizedPart2_1 $ parse input)
+
+{-- INFO: Previous unoptimized version
 part2 :: Mx.Matrix Char -> Int
 part2 mx =
     length . filter id $ simulate (1, 1)
@@ -96,11 +123,7 @@ part2 mx =
                 Wall ->
                     (nextPos `elem` xs)
                         || doIt (nextPos : xs) (P (changeDirection direction) currentPos) mx'
-                Free -> doIt xs (move p (fst nextPos)) mx'
-
-day6 :: T.Text -> (Int, Int)
-day6 input =
-    (part1 $ parse input, part2 $ parse input)
+                Free -> doIt xs (move p (fst nextPos)) mx' --}
 
 parse :: T.Text -> Mx.Matrix Char
 parse = Mx.fromLists . map T.unpack . T.lines
