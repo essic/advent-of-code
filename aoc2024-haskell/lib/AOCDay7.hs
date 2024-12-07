@@ -34,17 +34,24 @@ generateCasesPart1 (a : b : xs) =
         c2 = Mul a b
      in Choice c1 c2 (generateCasesPart1 (opToValue c1 : xs)) (generateCasesPart1 (opToValue c2 : xs))
 
-findResults :: TreePart1 -> [Int]
-findResults EmptyNode = []
-findResults (Choice r1 r2 EmptyNode EmptyNode) = [opToValue r1, opToValue r2]
-findResults (Choice _ _ a1 a2) = findResults a1 ++ findResults a2
-
 getNumberOfSolvedPart1 :: Equation -> (Equation, EquationStatus)
 getNumberOfSolvedPart1 eqn@Eqn{result = r, operands = p} =
     let ps = generateCasesPart1 p
         results = findResults ps
         solvedNTimes = sum $ map (\x -> if x == r then 1 else 0) results
      in (eqn, Solved solvedNTimes)
+  where
+    findResults :: TreePart1 -> [Int]
+    findResults EmptyNode = []
+    findResults (Choice r1 r2 EmptyNode EmptyNode) = [opToValue r1, opToValue r2]
+    findResults (Choice c1 c2 a1 a2) =
+        let continueC1 = opToValue c1 < r
+            continueC2 = opToValue c2 < r
+         in case (continueC1, continueC2) of
+                (True, True) -> findResults a1 ++ findResults a2
+                (True, False) -> findResults a1
+                (False, True) -> findResults a2
+                (False, False) -> []
 
 data TreePart2 = EmptyNode2 | Choice2 Op Op Op TreePart2 TreePart2 TreePart2
     deriving (Show)
@@ -64,18 +71,31 @@ generateCasesPart2 (a : b : xs) =
             (generateCasesPart2 (opToValue c2 : xs))
             (generateCasesPart2 (opToValue c3 : xs))
 
-findResults2 :: TreePart2 -> [Int]
-findResults2 EmptyNode2 = []
-findResults2 (Choice2 r1 r2 r3 EmptyNode2 EmptyNode2 EmptyNode2) = [opToValue r1, opToValue r2, opToValue r3]
-findResults2 (Choice2 _ _ _ a1 a2 a3) = findResults2 a1 ++ findResults2 a2 ++ findResults2 a3
-
 getNumberOfSolvedPart2 :: Equation -> (Equation, EquationStatus)
 getNumberOfSolvedPart2 eqn@Eqn{result = r, operands = p} =
     let ps = generateCasesPart2 p
         results = findResults2 ps
         solvedNTimes = sum $ map (\x -> if x == r then 1 else 0) results
      in (eqn, Solved solvedNTimes)
-
+  where
+    findResults2 :: TreePart2 -> [Int]
+    findResults2 EmptyNode2 = []
+    findResults2 (Choice2 r1 r2 r3 EmptyNode2 EmptyNode2 EmptyNode2) =
+        [opToValue r1, opToValue r2, opToValue r3]
+    findResults2 (Choice2 c1 c2 c3 a1 a2 a3) =
+        -- findResults2 a1 ++ findResults2 a2 ++ findResults2 a3
+        let continueC1 = opToValue c1 < r
+            continueC2 = opToValue c2 < r
+            continueC3 = opToValue c3 < r
+         in case (continueC1, continueC2, continueC3) of
+                (True, True, True) -> findResults2 a1 ++ findResults2 a2 ++ findResults2 a3
+                (True, False, False) -> findResults2 a1
+                (True, True, False) -> findResults2 a1 ++ findResults2 a2
+                (False, True, False) -> findResults2 a2
+                (False, True, True) -> findResults2 a2 ++ findResults2 a3
+                (False, False, True) -> findResults2 a3
+                (True, False, True) -> findResults2 a1 ++ findResults2 a3
+                (False, False, False) -> []
 day7 :: T.Text -> (Int, Int)
 day7 input =
     let values = parse input
