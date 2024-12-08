@@ -14,8 +14,37 @@ data Equation
     , terms :: [Int]
     }
 
+-- INFO: Simple elegant solution but slow...
+-- TODO: How to make it fast ??
+data Part = P1 | P2
+    deriving (Eq)
+
+isValidEquation :: Part -> Equation -> Bool
+isValidEquation part Eqn{result = result, terms = terms} =
+    -- INFO: Thanks to Charles Cabergs for the input !
+    -- https://www.youtube.com/live/tZkCELABcIQ?si=E67aOmyLOtJ7uO96
+    elem result . trySolving . reverse $ terms
+  where
+    trySolving :: [Int] -> [Int]
+    trySolving [] = []
+    trySolving [t] = [t]
+    trySolving (t : ts) =
+        let runAlways = ((* t) <$> trySolving ts) ++ ((+ t) <$> trySolving ts)
+         in if part == P2
+                then runAlways ++ ((\x -> read $ show x ++ show t) <$> trySolving ts)
+                else runAlways
+
+part1 :: [Equation] -> Int
+part1 eqns =
+    sum . map result $ filter (isValidEquation P1) eqns
+
+part2 :: [Equation] -> Int
+part2 eqns =
+    sum . map result $ filter (isValidEquation P2) eqns
+
 -- TODO: A generic version working in reverse ?
 
+-- INFO: actual validated solution for now...
 workingInReversePart1 :: [Equation] -> Int
 workingInReversePart1 eqns =
     sum $ part1' <$> eqns
@@ -38,6 +67,7 @@ workingInReversePart1 eqns =
                 (True, False) -> compute c2 (b : xs)
                 (False, True) -> compute c1 (b : xs)
 
+-- INFO: actual validated solution for now...
 workingInReversePart2 :: [Equation] -> Int
 workingInReversePart2 eqns =
     sum $ part2' <$> eqns
@@ -91,7 +121,7 @@ workingInReversePart2 eqns =
 day7 :: T.Text -> (Int, Int)
 day7 input =
     let values = parse input
-     in (workingInReversePart1 values, workingInReversePart2 values)
+     in (part1 values, part2 values)
 
 parse :: T.Text -> [Equation]
 parse input = toEquation <$> T.lines input
