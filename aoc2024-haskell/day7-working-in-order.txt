@@ -1,0 +1,3 @@
+cabal run aoc2024-hs 7  1,22s user 0,39s system 99% cpu 1,617 total
+cabal run aoc2024-hs 7  1,11s user 0,50s system 100% cpu 1,605 total
+cabal run aoc2024-hs 7  1,29s user 0,33s system 100% cpu 1,616 total

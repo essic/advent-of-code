@@ -1,4 +1,8 @@
-module AOCDay7 (day7, cutSuffix) where
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
+
+-- INFO: Several version exists, it would be interesting to check the difference of performance
+-- Alternative versions at the end of the file, some basic measurement is also in the repo.
+module AOCDay7 (day7) where
 
 import Data.Maybe (fromMaybe)
 import Data.Text qualified as T
@@ -7,16 +11,17 @@ import Text.Read (readMaybe)
 data Equation
     = Eqn
     { result :: Int
-    , operands :: [Int]
+    , terms :: [Int]
     }
-    deriving (Show)
 
-part1 :: [Equation] -> Int
-part1 eqns =
+-- TODO: A generic version working in reverse ?
+
+workingInReversePart1 :: [Equation] -> Int
+workingInReversePart1 eqns =
     sum $ part1' <$> eqns
   where
     part1' :: Equation -> Int
-    part1' Eqn{result = r, operands = ints} =
+    part1' Eqn{result = r, terms = ints} =
         let stni = reverse ints
          in if compute r stni then r else 0
     compute :: Int -> [Int] -> Bool
@@ -33,21 +38,20 @@ part1 eqns =
                 (True, False) -> compute c2 (b : xs)
                 (False, True) -> compute c1 (b : xs)
 
-cutSuffix :: String -> String -> Maybe (String, String)
-cutSuffix toRemove from =
-    let suffix = reverse . take (length toRemove) $ reverse from
-        prefix = take (length from - length suffix) from
-        verify = suffix == toRemove
-     in if verify then Just (suffix, prefix) else Nothing
-
-part2 :: [Equation] -> Int
-part2 eqns =
+workingInReversePart2 :: [Equation] -> Int
+workingInReversePart2 eqns =
     sum $ part2' <$> eqns
   where
+    cutSuffix :: String -> String -> Maybe (String, String)
+    cutSuffix toRemove from =
+        let suffix = reverse . take (length toRemove) $ reverse from
+            prefix = take (length from - length suffix) from
+            verify = suffix == toRemove
+         in if verify then Just (suffix, prefix) else Nothing
     toInt :: String -> Maybe Int
     toInt = readMaybe
     part2' :: Equation -> Int
-    part2' Eqn{result = r, operands = ints} =
+    part2' Eqn{result = r, terms = ints} =
         let stni = reverse ints
          in if compute r stni then r else 0
     compute :: Int -> [Int] -> Bool
@@ -68,7 +72,8 @@ part2 eqns =
             aStr = show a
             irStr = show ir
             maybeSuffix = fromMaybe ("", "") (cutSuffix aStr irStr)
-            c3 = fromMaybe 0 (toInt . snd $ maybeSuffix) -- if c3 is 0, it means that we failed at cutting the suffix anyway
+            -- if c3 is 0, it means that we failed at cutting the suffix anyway
+            c3 = fromMaybe 0 (toInt . snd $ maybeSuffix)
          in case (modC1 /= 0, c2 <= 0, maybeSuffix == ("", "")) of
                 (True, True, True) -> False
                 (False, False, False) -> compute c1 (b : xs) || compute c2 (b : xs) || compute c3 (b : xs)
@@ -79,10 +84,14 @@ part2 eqns =
                 (False, True, False) -> compute c1 (b : xs) || compute c3 (b : xs)
                 (True, False, False) -> compute c2 (b : xs) || compute c3 (b : xs)
 
+-- INFO: the code below is valid but twice slower !
+--    nextRun = flip compute (b : xs)
+-- in modC1 /= 0 && nextRun c1 || c2 <= 0 && nextRun c2 || maybeSuffix == ("", "") && nextRun c3
+
 day7 :: T.Text -> (Int, Int)
 day7 input =
     let values = parse input
-     in (part1 values, part2 values)
+     in (workingInReversePart1 values, workingInReversePart2 values)
 
 parse :: T.Text -> [Equation]
 parse input = toEquation <$> T.lines input
@@ -92,12 +101,98 @@ parse input = toEquation <$> T.lines input
     toEquation :: T.Text -> Equation
     toEquation i =
         let components = T.splitOn (T.pack ":") i
-            rawResult = head components
-            rawOperands1 = T.strip $ T.concat (tail components)
+            rawResult =
+                case components of
+                    (x : _) -> x
+                    _ -> error "Parsing should not fail !"
+            rawOperands1 =
+                case components of
+                    (_ : xs) -> T.strip $ T.concat xs
+                    _ -> error "Parsing should not failt !"
             rawOperands2 = T.splitOn (T.pack " ") rawOperands1
-         in Eqn{result = toInt rawResult, operands = toInt <$> rawOperands2}
+         in Eqn{result = toInt rawResult, terms = toInt <$> rawOperands2}
 
--- INFO: old inefficient solution
+-- INFO: a more generic version twice slower than specific ones...
+
+-- TODO: Why is it slower ?
+genericWorkingInOrderPart1 :: [Equation] -> Int
+genericWorkingInOrderPart1 eqns =
+    sum $ genericWorkingInOrderSolver [Mul, Add] <$> eqns
+
+genericWorkingInOrderPart2 :: [Equation] -> Int
+genericWorkingInOrderPart2 eqns =
+    sum $ genericWorkingInOrderSolver [Mul, Add, Concat] <$> eqns
+
+genericWorkingInOrderSolver :: [Int -> Int -> Op] -> Equation -> Int
+genericWorkingInOrderSolver ops Eqn{result = total, terms = terms} =
+    if compute 0 terms then total else 0
+  where
+    compute :: Int -> [Int] -> Bool
+    compute ir [] =
+        total == ir
+    compute !ir [a] =
+        elem total $ opToValue . (\x -> x ir a) <$> ops
+    compute 0 (a : b : xs) =
+        let cx = (\op -> op a b) <$> ops
+            values = opToValue <$> cx
+         in any (`compute` xs) values
+    compute !ir (a : b : xs) =
+        let cx = (\op -> op ir a) <$> ops
+            values = opToValue <$> cx
+            run = (toto <$> values)
+            toto c = c < total && compute c (b : xs)
+         in or run
+
+-- INFO: Less efficient solution than working in reverse, still way more efficient than the Tree solution
+workingInOrderPart1 :: [Equation] -> Int
+workingInOrderPart1 eqns =
+    sum $ solver <$> eqns
+  where
+    solver :: Equation -> Int
+    solver Eqn{result = total, terms = terms} =
+        if compute 0 terms then total else 0
+      where
+        compute :: Int -> [Int] -> Bool
+        compute ir [] =
+            total == ir
+        compute ir [a] =
+            total == a + ir || total == a * ir
+        compute 0 (a : b : xs) =
+            let c1 = a + b
+                c2 = a * b
+             in compute c1 xs || compute c2 xs
+        compute ir (a : b : xs) =
+            let c1 = a + ir
+                c2 = a * ir
+             in c1 < total && compute c1 (b : xs) || c2 < total && compute c2 (b : xs)
+
+workingInOrderPart2 :: [Equation] -> Int
+workingInOrderPart2 eqns =
+    sum $ solver <$> eqns
+  where
+    solver :: Equation -> Int
+    solver Eqn{result = total, terms = terms} =
+        if compute 0 terms then total else 0
+      where
+        compute :: Int -> [Int] -> Bool
+        compute ir [] =
+            total == ir
+        compute ir [a] =
+            total == a + ir || total == a * ir || show a ++ show ir == show total
+        compute 0 (a : b : xs) =
+            let c1 = a + b
+                c2 = a * b
+                c3 = read $ show a ++ show b
+             in compute c1 xs || compute c2 xs || compute c3 xs
+        compute ir (a : b : xs) =
+            let c1 = a + ir
+                c2 = a * ir
+                c3 = read $ show a ++ show b
+             in c1 < total && compute c1 (b : xs)
+                    || c2 < total && compute c2 (b : xs)
+                    || c3 < total && compute c3 (b : xs)
+
+-- INFO: old inefficient Tree solution
 
 data Op = Mul Int Int | Add Int Int | Concat Int Int
 opToValue :: Op -> Int
@@ -125,7 +220,7 @@ generateCasesPart1 (a : b : xs) =
      in Choice c1 c2 (generateCasesPart1 (opToValue c1 : xs)) (generateCasesPart1 (opToValue c2 : xs))
 
 getNumberOfSolvedPart1 :: Equation -> (Equation, EquationStatus)
-getNumberOfSolvedPart1 eqn@Eqn{result = r, operands = p} =
+getNumberOfSolvedPart1 eqn@Eqn{result = r, terms = p} =
     let ps = generateCasesPart1 p
         results = findResults ps
         solvedNTimes = sum $ map (\x -> if x == r then 1 else 0) results
@@ -162,7 +257,7 @@ generateCasesPart2 (a : b : xs) =
             (generateCasesPart2 (opToValue c3 : xs))
 
 getNumberOfSolvedPart2 :: Equation -> (Equation, EquationStatus)
-getNumberOfSolvedPart2 eqn@Eqn{result = r, operands = p} =
+getNumberOfSolvedPart2 eqn@Eqn{result = r, terms = p} =
     let ps = generateCasesPart2 p
         results = findResults2 ps
         solvedNTimes = sum $ map (\x -> if x == r then 1 else 0) results
@@ -173,7 +268,6 @@ getNumberOfSolvedPart2 eqn@Eqn{result = r, operands = p} =
     findResults2 (Choice2 r1 r2 r3 EmptyNode2 EmptyNode2 EmptyNode2) =
         [opToValue r1, opToValue r2, opToValue r3]
     findResults2 (Choice2 c1 c2 c3 a1 a2 a3) =
-        -- findResults2 a1 ++ findResults2 a2 ++ findResults2 a3
         let continueC1 = opToValue c1 < r
             continueC2 = opToValue c2 < r
             continueC3 = opToValue c3 < r
