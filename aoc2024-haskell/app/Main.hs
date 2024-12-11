@@ -1,12 +1,15 @@
 module Main where
 
 import AOCDay1
+import AOCDay10
+import AOCDay11
 import AOCDay2
 import AOCDay3
 import AOCDay4
 import AOCDay5
 import AOCDay6
 import AOCDay7
+import AOCDay9
 import Control.Monad (when)
 import Data.Map qualified as M
 import Data.Text qualified as T
@@ -24,6 +27,9 @@ ctx =
         , ("data/day5.txt", day5)
         , ("data/day6.txt", day6)
         , ("data/day7.txt", day7)
+        , ("data/day9.txt", day9)
+        , ("data/day10.txt", day10)
+        , ("data/day11.txt", day11)
         ]
 
 data RunParam

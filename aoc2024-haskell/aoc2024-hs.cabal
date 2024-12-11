@@ -91,7 +91,11 @@ library
         AOCDay4,
         AOCDay5,
         AOCDay6,
-        AOCDay7
+        AOCDay7,
+        AOCDay8,
+        AOCDay9,
+        AOCDay10,
+        AOCDay11,
 
     -- Modules included in this library but not exported.
     -- other-modules:
@@ -107,6 +111,8 @@ library
         vector,
         attoparsec,
         matrix,
+        Unique,
+        unordered-containers,
 
     -- Directories containing source files.
     hs-source-dirs:   lib

@@ -4,12 +4,16 @@
 module Main (main) where
 
 import AOCDay1
+import AOCDay10
+import AOCDay11
 import AOCDay2
 import AOCDay3
 import AOCDay4
 import AOCDay5
 import AOCDay6
 import AOCDay7
+import AOCDay8
+import AOCDay9
 import Data.String.QQ
 import Data.Text qualified as T
 import Test.Hspec
@@ -68,6 +72,67 @@ main = hspec $ do
         it "- part 2" $ do
             let (_, res) = day7 inputDay7
              in res `shouldBe` 11387
+    describe "Day 8" $ do
+        it "- part 1" $ do
+            let (res, _) = day8 inputDay8
+             in res `shouldBe` 14
+        it "- part 2" $ do
+            let (_, res) = day8 inputDay8
+             in res `shouldBe` 14
+    describe "Day 9" $ do
+        it "- part 1" $ do
+            let (res, _) = day9 inputDay9
+             in res `shouldBe` 1928
+        it "- part 2" $ do
+            let (_, res) = day9 inputDay9
+             in res `shouldBe` 2858
+    describe "Day 10" $ do
+        it "- part 1" $ do
+            let (res, _) = day10 inputDay10
+             in res `shouldBe` 36
+        it "- part 2" $ do
+            let (_, res) = day10 inputDay10
+             in res `shouldBe` 81
+    describe "Day 11" $ do
+        it "- part 1" $ do
+            let (res, _) = day11 inputDay11
+             in res `shouldBe` 55312
+        it "- part 2" $ do
+            let (_, res) = day11 inputDay11
+             in res `shouldBe` 55312
+
+inputDay11 :: T.Text
+inputDay11 = [s|125 17|]
+
+inputDay10 :: T.Text
+inputDay10 =
+    [s|89010123
+78121874
+87430965
+96549874
+45678903
+32019012
+01329801
+10456732|]
+
+inputDay9 :: T.Text
+inputDay9 =
+    [s|2333133121414131402|]
+
+inputDay8 :: T.Text
+inputDay8 =
+    [s|............
+........0...
+.....0......
+.......0....
+....0.......
+......A.....
+............
+............
+........A...
+.........A..
+............
+............|]
 
 inputDay7 :: T.Text
 inputDay7 =
