@@ -3,6 +3,7 @@ module Main where
 import AOCDay1
 import AOCDay10
 import AOCDay11
+import AOCDay13
 import AOCDay2
 import AOCDay3
 import AOCDay4
@@ -27,9 +28,12 @@ ctx =
         , ("data/day5.txt", day5)
         , ("data/day6.txt", day6)
         , ("data/day7.txt", day7)
-        , ("data/day9.txt", day9)
+        , -- day 8 missing !
+          ("data/day9.txt", day9)
         , ("data/day10.txt", day10)
         , ("data/day11.txt", day11)
+        , -- day 12 missing
+          ("data/day13.txt", day13)
         ]
 
 data RunParam

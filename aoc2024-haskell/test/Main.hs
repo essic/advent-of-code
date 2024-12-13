@@ -6,6 +6,7 @@ module Main (main) where
 import AOCDay1
 import AOCDay10
 import AOCDay11
+import AOCDay13
 import AOCDay2
 import AOCDay3
 import AOCDay4
@@ -97,9 +98,35 @@ main = hspec $ do
         it "- part 1" $ do
             let (res, _) = day11 inputDay11
              in res `shouldBe` 55312
+    it "- part 2" $ do
+        let (_, res) = day11 inputDay11
+         in res `shouldBe` 65601038650482
+    describe "Day 13" $ do
+        it "- part 1" $ do
+            let (res, _) = day13 inputDay13
+             in res `shouldBe` 480
         it "- part 2" $ do
-            let (_, res) = day11 inputDay11
-             in res `shouldBe` 55312
+            let (_, res) = day13 inputDay13
+             in res `shouldBe` 875318608908
+
+inputDay13 :: T.Text
+inputDay13 =
+    [s|Button A: X+94, Y+34
+Button B: X+22, Y+67
+Prize: X=8400, Y=5400
+
+Button A: X+26, Y+66
+Button B: X+67, Y+21
+Prize: X=12748, Y=12176
+
+Button A: X+17, Y+86
+Button B: X+84, Y+37
+Prize: X=7870, Y=6450
+
+Button A: X+69, Y+23
+Button B: X+27, Y+71
+Prize: X=18641, Y=10279
+|]
 
 inputDay11 :: T.Text
 inputDay11 = [s|125 17|]
