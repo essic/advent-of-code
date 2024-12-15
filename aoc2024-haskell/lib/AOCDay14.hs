@@ -48,7 +48,48 @@ initializeArea robots area = foldr setRobot area robots
         let currentValue = uncurry M.getElem (swap position) m
          in Area $ M.setElem (currentValue + 1) (swap position) m
 
--- TODO: Can the position computed directly using formula ?
+tick :: Int -> Area -> [Robot] -> (Area,[Robot])
+tick time area robots =
+    let updatedRobots = computeRobotPosition area time <$> robots
+        updatedArea = initializeArea updatedRobots area
+     in (updatedArea,updatedRobots)
+     where
+        computeRobotPosition :: Area -> Int -> Robot -> Robot
+        computeRobotPosition (Area m) time r@(Robot{p = Position position, v = Velocity velocity}) =
+            let col = (fst position + time * fst velocity) `mod` M.ncols m
+                row = (snd position + time * snd velocity) `mod` M.nrows m
+                col' = if col < 1 then col + M.ncols m else col
+                row' = if row < 1 then row + M.nrows m else row
+                newPosition = Position (col', row')
+             in Robot{p = newPosition, v = Velocity velocity}
+
+
+smarterPart1 :: Int -> Int -> Int  -> [Robot] -> Int
+smarterPart1 nTimes height widith robots =
+    let area = Area $ M.zero height widith
+        (updatedArea,updatedRobots) = tick nTimes area robots
+        !quadrants = getQuadrants updatedArea
+     in product $ sum <$> quadrants
+
+--INFO: Wrong but we'll see ..
+-- mostConsecutiveInTheMiddle :: Area -> Int
+-- mostConsecutiveInTheMiddle (Area m) =
+--   let middleCol = M.ncols m `div` 2
+--       middleRow = M.nrows m `div` 2
+--    in (sum (M.getRow middleRow m) + sum (M.getCol middleCol m))
+
+
+day14 :: Int -> Int -> T.Text -> (Int, Int)
+day14 widith height input =
+    let part1 = smarterPart1 100 height widith robots  -- product $ sum <$> (getQuadrants . fst $ play 1 (area, robots))
+     in (part1, 0)
+  where
+    robots =
+        case AT.parseOnly parseRobots input of
+            Right r -> r
+            Left msg -> error msg
+    area = initializeArea robots $ Area $ M.zero height widith
+
 play :: Int -> (Area, [Robot]) -> (Area, [Robot])
 play nTimes (area, robots) =
     loop nTimes (area, robots)
@@ -84,32 +125,6 @@ robotTurn (Area m) Robot{p = Position currentPosition, v = Velocity (horizontal,
                 then deltaRow
                 else if deltaRow < 1 then M.nrows m + deltaRow else deltaRow - M.nrows m
 
-{-- Wrong
-mostConsecutiveInTheMiddle :: Area -> Int
-mostConsecutiveInTheMiddle (Area m) =
-    let middleCol = M.ncols m `div` 2
-        middleRow = M.nrows m `div` 2
-     in (sum (M.getRow middleRow m) + sum (M.getCol middleCol m))
-
-part2 :: Int -> (Area, [Robot]) -> V.Vector (Int, Int) -> Int
-part2 100 _ acc =
-    fst $ V.maximumBy (\(turnA, nbRobotsA) (turnB, nbRobotsB) -> compare nbRobotsA nbRobotsB) acc
-part2 turnNumber x acc =
-    let (updatedArea, updatedRobots) = play 1 x
-        nbRobots = mostConsecutiveInTheMiddle updatedArea
-     in part2 (turnNumber + 1) (updatedArea, updatedRobots) $ V.cons (turnNumber, nbRobots) acc
---}
-
-day14 :: Int -> Int -> T.Text -> (Int, Int)
-day14 widith height input =
-    let part1 = product $ sum <$> (getQuadrants . fst $ play 1 (area, robots))
-     in (part1, 0)
-  where
-    robots =
-        case AT.parseOnly parseRobots input of
-            Right r -> r
-            Left msg -> error msg
-    area = initializeArea robots $ Area $ M.zero height widith
 
 parseRobots :: AT.Parser [Robot]
 parseRobots =
