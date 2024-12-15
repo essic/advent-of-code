@@ -7,6 +7,7 @@ import AOCDay1
 import AOCDay10
 import AOCDay11
 import AOCDay13
+import AOCDay14
 import AOCDay2
 import AOCDay3
 import AOCDay4
@@ -108,6 +109,28 @@ main = hspec $ do
         it "- part 2" $ do
             let (_, res) = day13 inputDay13
              in res `shouldBe` 875318608908
+    describe "Day 14" $ do
+        it "- part 1" $ do
+            let (res, _) = day14 11 7 inputDay14
+             in res `shouldBe` 12
+        it "- part 2" $ do
+            let (_, res) = day14 11 7 inputDay14
+             in res `shouldBe` 12
+
+inputDay14 :: T.Text
+inputDay14 =
+    [s|p=0,4 v=3,-3
+p=6,3 v=-1,-3
+p=10,3 v=-1,2
+p=2,0 v=2,-1
+p=0,0 v=1,3
+p=3,0 v=-2,-2
+p=7,6 v=-1,-3
+p=3,0 v=-1,-2
+p=9,3 v=2,3
+p=7,3 v=-1,2
+p=2,4 v=2,-3
+p=9,5 v=-3,-3|]
 
 inputDay13 :: T.Text
 inputDay13 =

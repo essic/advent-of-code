@@ -4,6 +4,7 @@ import AOCDay1
 import AOCDay10
 import AOCDay11
 import AOCDay13
+import AOCDay14
 import AOCDay2
 import AOCDay3
 import AOCDay4
@@ -34,6 +35,7 @@ ctx =
         , ("data/day11.txt", day11)
         , -- day 12 missing
           ("data/day13.txt", day13)
+        , ("data/day14.txt", day14 101 103)
         ]
 
 data RunParam
