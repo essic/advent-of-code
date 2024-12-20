@@ -11,7 +11,6 @@ import Data.Tuple (swap)
 -- import Data.Vector.Strict qualified as V
 
 import Data.List (groupBy)
-import Debug.Trace qualified as D
 
 type Column = Int
 type Row = Int
@@ -68,10 +67,10 @@ tick frame area robots =
 part2 :: Int -> Int -> Int -> [Robot] -> Int
 part2 lastFrame height widith robots =
     let r = loop 1 []
-        result = D.trace (show $ length r) $ maximumBy (\(nb1, _) (nb2, _) -> compare nb1 nb2) r
+        result = maximumBy (\(nb1, _) (nb2, _) -> compare nb1 nb2) r
         (uArea, uRobots) = tick (snd result) (Area $ M.zero height widith) robots
         toRender = initializeArea uRobots uArea
-     in D.trace (show toRender) $ snd result
+     in snd result
   where
     area = Area $ M.zero height widith
     middlePosition =

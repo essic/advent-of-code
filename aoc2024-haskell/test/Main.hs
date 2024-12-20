@@ -80,7 +80,7 @@ main = hspec $ do
              in res `shouldBe` 14
         it "- part 2" $ do
             let (_, res) = day8 inputDay8
-             in res `shouldBe` 14
+             in res `shouldBe` 34
     describe "Day 9" $ do
         it "- part 1" $ do
             let (res, _) = day9 inputDay9
